@@ -3,6 +3,21 @@ import pandas as pd
 import numpy as np
 import joblib
 import os
+import sys
+
+# --- PARCHE DE COMPATIBILIDAD PARA VERSIONES DE SCIKIT-LEARN ---
+# Este parche soluciona el error 'No module named _loss' redirigiendo
+# las llamadas de carga del modelo antiguo hacia la estructura moderna.
+try:
+    import sklearn.ensemble._gb_losses as losses
+    sys.modules['sklearn.ensemble.losses'] = losses
+except ImportError:
+    try:
+        # Para versiones muy nuevas que renombraron o movieron las pérdidas internas
+        from sklearn.ensemble import _gradient_boosting
+        sys.modules['sklearn.ensemble._loss'] = _gradient_boosting
+    except ImportError:
+        pass
 
 # Configuración de la página de Streamlit
 st.set_page_config(page_title="Predicción de Rendimiento Estudiantil", layout="wide")
