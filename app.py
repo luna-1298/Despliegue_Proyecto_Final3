@@ -30,7 +30,7 @@ def cargar_recursos():
 try:
     modelo_boosting, scaler = cargar_recursos()
     st.success("¡Modelo y escalador cargados correctamente desde el repositorio!")
-type Exception as e:
+except Exception as e:
     st.error(f"Error al cargar los recursos: {e}. Asegúrate de tener 'optimized_boosting_model.joblib' y 'min_max_scaler.joblib' en el mismo directorio de tu repositorio.")
     st.stop()
 
