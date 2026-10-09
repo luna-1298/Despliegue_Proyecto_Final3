@@ -10,19 +10,16 @@ st.set_page_config(page_title="Predicción de Rendimiento Estudiantil", layout="
 st.title("🎯 Aplicación Predictiva: Rendimiento Estudiantil")
 st.markdown("Esta aplicación procesa datos de estudiantes y predice si el alumno aprobará (**Pass**) o reprobará (**Fail**) utilizando un modelo optimizado de Boosting.")
 
-# --- CARGA DE ARCHIVOS / MODELOS (Rutas relativas para GitHub) ---
+# --- CARGA DE ARCHIVOS / MODELOS (Rutas dinámicas locales del repositorio) ---
 @st.cache_resource
 def cargar_recursos():
-    # Buscar en el directorio de trabajo local (ideal para GitHub)
-    modelo_path = 'optimized_boosting_model.joblib'
-    scaler_path = 'min_max_scaler.joblib'
+    # Obtener el directorio donde se encuentra este archivo script (app.py)
+    dir_actual = os.path.dirname(os.path.abspath(__file__))
     
-    # Fallback por si sigue en el entorno local de Colab temporalmente
-    if not os.path.exists(modelo_path):
-        modelo_path = '/content/optimized_boosting_model.joblib'
-    if not os.path.exists(scaler_path):
-        scaler_path = '/content/min_max_scaler.joblib'
-        
+    # Rutas relativas locales exclusivas para el despliegue en GitHub
+    modelo_path = os.path.join(dir_actual, 'optimized_boosting_model.joblib')
+    scaler_path = os.path.join(dir_actual, 'min_max_scaler.joblib')
+    
     modelo = joblib.load(modelo_path)
     scaler = joblib.load(scaler_path)
     return modelo, scaler
@@ -31,7 +28,7 @@ try:
     modelo_boosting, scaler = cargar_recursos()
     st.success("¡Modelo y escalador cargados correctamente desde el repositorio!")
 except Exception as e:
-    st.error(f"Error al cargar los recursos: {e}. Asegúrate de tener 'optimized_boosting_model.joblib' y 'min_max_scaler.joblib' en el mismo directorio de tu repositorio.")
+    st.error(f"Error al cargar los recursos: {e}. Asegúrate de subir 'optimized_boosting_model.joblib' y 'min_max_scaler.joblib' en la misma carpeta que 'app.py' en tu repositorio de GitHub.")
     st.stop()
 
 # --- FORMULARIO DE ENTRADA PARA UN NUEVO REGISTRO ---
@@ -63,7 +60,7 @@ if st.button("🔮 Predecir Rendimiento"):
         'StudyTime_hours_week': study_time_hours_week,
         'Failures': failures,
         'Absences': absences,
-        'Internet': 1 if internet == "yes" else 0, # Mismo mapeo que el LabelEncoder ('yes' -> 1, 'no' -> 0)
+        'Internet': 1 if internet == "yes" else 0,
         'FreeTime': free_time,
         'GoOut': go_out,
         'Health': health,
@@ -78,20 +75,20 @@ if st.button("🔮 Predecir Rendimiento"):
         'Internet', 'FreeTime', 'GoOut', 'Health',
         'MotherEducation', 'FatherEducation', 'TravelTime'
     ]
-    
+
     try:
         datos_entrada_normalizados = datos_entrada.copy()
         datos_entrada_normalizados[columnas_modelo] = scaler.transform(datos_entrada[columnas_modelo])
-        
+
         # 3. Realizar predicción
         prediccion = modelo_boosting.predict(datos_entrada_normalizados[columnas_modelo])[0]
-        
+
         # 4. Mostrar resultado decorado
         st.subheader("📊 Resultado de la Predicción:")
         if prediccion == 1:
             st.success("🎉 **Aprobado (Pass / 1)**: Basado en los hábitos e historial del estudiante, se predice que aprobará de forma satisfactoria.")
         else:
             st.error("⚠️ **Reprobado (Fail / 0)**: Se detectaron factores de riesgo de reprobación. Es recomendable aplicar un plan de acompañamiento académico.")
-            
+
     except Exception as e:
         st.error(f"Ocurrió un error durante el procesamiento de la predicción: {e}")
