@@ -5,28 +5,21 @@ import joblib
 import os
 import sys
 
-# --- PARCHE AVANZADO DE COMPATIBILIDAD PARA SCIKIT-LEARN (Solución definitiva para '_loss') ---
+# --- PARCHE DE COMPATIBILIDAD ROBUSTO PARA CONTROLAR CAMBIOS EN SCIKIT-LEARN ---
 try:
-    # Intentar importar la estructura moderna de pérdidas
-    import sklearn.ensemble._gb_losses as losses
-    sys.modules['sklearn.ensemble.losses'] = losses
+    # Si scikit-learn busca las clases de pérdida antiguas (_gb_losses)
+    import sklearn.ensemble._loss as modern_loss
+    sys.modules['sklearn.ensemble._gb_losses'] = modern_loss
+    sys.modules['sklearn.ensemble.losses'] = modern_loss
 except ImportError:
-    try:
-        # Para versiones donde '_loss' cambió de ubicación interna
-        import sklearn.ensemble._parameter_validation as pv
-        # Crear un módulo simulado en sys.modules para interceptar el unpickling
-        import types
-        dummy_loss = types.ModuleType("sklearn.ensemble._loss")
-        # Inyectar clases comunes que el modelo de boosting busca durante la carga
-        try:
-            from sklearn.ensemble._loss import HalfBinomialLoss, BinomialLoss
-            dummy_loss.HalfBinomialLoss = HalfBinomialLoss
-            dummy_loss.BinomialLoss = BinomialLoss
-        except ImportError:
-            pass
-        sys.modules['sklearn.ensemble._loss'] = dummy_loss
-    except Exception:
-        pass
+    pass
+
+try:
+    # Si scikit-learn busca clases antiguas de pérdida directamente en '_loss'
+    import sklearn.ensemble._gb_losses as legacy_loss
+    sys.modules['sklearn.ensemble._loss'] = legacy_loss
+except ImportError:
+    pass
 
 # Configuración de la página de Streamlit
 st.set_page_config(page_title="Predicción de Rendimiento Estudiantil", layout="wide")
