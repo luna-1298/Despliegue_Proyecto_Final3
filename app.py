@@ -26,6 +26,11 @@ st.set_page_config(page_title="Predicción de Rendimiento Estudiantil", layout="
 
 st.title("🎯 Aplicación Predictiva: Rendimiento Estudiantil")
 st.markdown("Esta aplicación procesa datos de estudiantes y predice si el alumno aprobará (**Pass**) o reprobará (**Fail**) utilizando un modelo optimizado de Boosting.")
+st.subheader("Presentado por:")
+st.markdown("""
+- Luna Tatiana Madroñero Jaimes
+- Juan Jose Restrepo Salamanca
+""")
 
 # --- CARGA DE ARCHIVOS / MODELOS (Rutas dinámicas locales del repositorio) ---
 @st.cache_resource
