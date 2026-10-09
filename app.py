@@ -5,18 +5,27 @@ import joblib
 import os
 import sys
 
-# --- PARCHE DE COMPATIBILIDAD PARA VERSIONES DE SCIKIT-LEARN ---
-# Este parche soluciona el error 'No module named _loss' redirigiendo
-# las llamadas de carga del modelo antiguo hacia la estructura moderna.
+# --- PARCHE AVANZADO DE COMPATIBILIDAD PARA SCIKIT-LEARN (Solución definitiva para '_loss') ---
 try:
+    # Intentar importar la estructura moderna de pérdidas
     import sklearn.ensemble._gb_losses as losses
     sys.modules['sklearn.ensemble.losses'] = losses
 except ImportError:
     try:
-        # Para versiones muy nuevas que renombraron o movieron las pérdidas internas
-        from sklearn.ensemble import _gradient_boosting
-        sys.modules['sklearn.ensemble._loss'] = _gradient_boosting
-    except ImportError:
+        # Para versiones donde '_loss' cambió de ubicación interna
+        import sklearn.ensemble._parameter_validation as pv
+        # Crear un módulo simulado en sys.modules para interceptar el unpickling
+        import types
+        dummy_loss = types.ModuleType("sklearn.ensemble._loss")
+        # Inyectar clases comunes que el modelo de boosting busca durante la carga
+        try:
+            from sklearn.ensemble._loss import HalfBinomialLoss, BinomialLoss
+            dummy_loss.HalfBinomialLoss = HalfBinomialLoss
+            dummy_loss.BinomialLoss = BinomialLoss
+        except ImportError:
+            pass
+        sys.modules['sklearn.ensemble._loss'] = dummy_loss
+    except Exception:
         pass
 
 # Configuración de la página de Streamlit
