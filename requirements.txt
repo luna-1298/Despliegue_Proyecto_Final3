@@ -1,7 +1,9 @@
+pandas
+joblib
+openpyxl
 streamlit
+scikit-learn
 pandas
 numpy
-scikit-learn==1.6.1
-joblib==1.6.0
-xgboost
-lightgbm
+pickle-mixin
+matplotlib
